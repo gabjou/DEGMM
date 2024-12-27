@@ -31,11 +31,8 @@ Here's a basic example of how to use DEGMM:
 python main.py --n 1000 --M 10 --D 2 --K 3 --num_epochs 1000 --seed 0
 ```
 
-## Contributing
-We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) for more details.
-
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Contact
-For any questions or issues, please open an issue on GitHub or contact us at support@degmm.com.
+For any questions or issues, please open an issue on GitHub or contact us at gabrijou@gmail.com.
