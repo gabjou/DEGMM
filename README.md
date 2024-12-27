@@ -38,7 +38,7 @@ python main.py --n 1000 --M 10 --D 2 --K 3 --num_epochs 1000 --seed 0
   <img
   src="/figures/results.png"
   >
-  <em>Results of the DEGMM clustering for bivariate exchangeable ensemble data of M=10 members, with n=10000 and K=3 gaussian components. DEGMM results are compared to a simple Gaussian mixture model using the Expectation-Maximisation algorithm</em>
+  <em>Results of the DEGMM clustering for bivariate exchangeable ensemble data of M=10 members, with n=10000 and K=3 gaussian components. DEGMM results are compared to a simple Gaussian mixture model using the Expectation-Maximisation algorithm. Square symbolizes the cluster mean.</em>
 </figure>
 
 
