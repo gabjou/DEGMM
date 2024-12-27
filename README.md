@@ -1,8 +1,7 @@
 # DEGMM
 Deep Exchangeable Gaussian Mixture Model
 ## Overview
-DEGMM is a deep learning model designed for clustering and density estimation. It leverages the power of Gaussian Mixture Models (GMM) and deep neural networks to provide a flexible and scalable solution.
-
+DEGMM is a deep learning model designed for clustering and density estimation of exchangeable ensemble dataset distributed following gaussian mixture. It leverages the power of Gaussian Mixture Models (GMM), deep neural networks using jax and flax to provide a flexible and scalable solution for ensemble clustering. This work is inspired of two papers [Deep Autoencoding Gaussian Mixture Model for Unsupervised Anomaly Detection](https://openreview.net/forum?id=BJJLHbb0-) and [Gaussian mixture models for clustering and calibration of ensemble weather forecasts](https://www.researchgate.net/profile/Goulven-Monnier/publication/358989436_Gaussian_mixture_models_for_clustering_and_calibration_of_ensemble_weather_forecasts/links/638789c0bbdef30dc9877e90/Gaussian-mixture-models-for-clustering-and-calibration-of-ensemble-weather-forecasts.pdf)
 
 <figure>
   <img
