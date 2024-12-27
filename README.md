@@ -6,7 +6,7 @@ DEGMM is a deep learning model designed for clustering and density estimation. I
 
 <figure>
   <img
-  src="/figures/figures/example.png"
+  src="/figures/example.png"
   >
   <em>Example of Bivariate gaussian exchangeable ensemble following a K=3 components exchangeable Guassian mixture.</em>
 </figure>
