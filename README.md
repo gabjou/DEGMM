@@ -30,6 +30,18 @@ Here's a basic example of how to use DEGMM:
 ```shell
 python main.py --n 1000 --M 10 --D 2 --K 3 --num_epochs 1000 --seed 0
 ```
+- n: Size of the dataset (number of samples)
+- M: Size of the ensemble (number of ensemble members)
+- D: Space dimension (D=2 generate bivariate samples)
+- K: Number of mixture compnents (Number of clusters)
+<figure>
+  <img
+  src="/figures/results.png"
+  >
+  <em>Results of the DEGMM clustering for bivariate exchangeable ensemble data of M=10 members, with n=10000 and K=3 gaussian components. DEGMM results are compared to a simple Gaussian mixture model using the Expectation-Maximisation algorithm</em>
+</figure>
+
+
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

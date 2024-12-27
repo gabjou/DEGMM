@@ -3,4 +3,4 @@ jax[cuda12]
 flax
 matplotlib
 celluloid
-scikit-learn
+scikit-learn  
