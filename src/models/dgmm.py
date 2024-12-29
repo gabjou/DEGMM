@@ -7,7 +7,7 @@ import optax
 from jax import grad, jit, vmap
 from jax.random import PRNGKey, split, normal
 
-from src.utils.functions import log_likelihood_egmm
+from src.utils.functions import log_likelihood_gmm
 from src.models.mlp import MLP
 import logging
 from src.utils.functions import gaussian_density
@@ -16,11 +16,10 @@ from src.utils.functions import gaussian_density
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class DEGMM:
-    def __init__(self, D,hidden_dim, M, K, lr=0.001, logger=logger,lambda1=0.1,lambda2=0.005):
+class DGMM:
+    def __init__(self, D,hidden_dim, K, lr=0.001, logger=logger,lambda1=0.1,lambda2=0.005):
         self.D = D
         self.hidden_dim = hidden_dim
-        self.M = M
         self.K = K
 
 
@@ -30,14 +29,13 @@ class DEGMM:
         self.loss_value = jnp.inf
 
         rng = PRNGKey(0)
-        self.mlp = MLP(input_dim=D*M, hidden_dim=hidden_dim, K=K)
-        self.params = self.mlp.init(rng, jnp.ones((D*M,)))
+        self.mlp = MLP(input_dim=D, hidden_dim=hidden_dim, K=K)
+        self.params = self.mlp.init(rng, jnp.ones((D,)))
         self.state = train_state.TrainState.create(
             apply_fn=self.mlp.apply,
             params=self.params,
             tx=optax.adam(self.lr)
         )
-
         self.parameters =[{
             "epoch": self.epoch,
             'pi': None,
@@ -61,7 +59,7 @@ class DEGMM:
 
     def loss_function(self, X,pi, mu, Sigma):
         # Calculate the log-likelihood
-        log_lik = self.lambda1 * log_likelihood_egmm(X, pi, mu, Sigma)
+        log_lik = self.lambda1 * log_likelihood_gmm(X, pi, mu, Sigma)
         # Penalisation of singular matrices
         penalisation = self.lambda2 * jnp.sum(vmap(lambda k: jnp.sum(jnp.linalg.diagonal(Sigma[k,:,:])))(jnp.arange(self.K)))
 
@@ -77,18 +75,17 @@ class DEGMM:
         @jit
         def train_step(state, X):
             def loss_fn(params):
-                output = self.mlp.apply(params, X.reshape(n, self.D * self.M))
+                output = self.mlp.apply(params, X.reshape(n, self.D))
                 gamma = output
                 
                 N_k = jnp.sum(gamma, axis=0)
                 pi = N_k / n
-                mu = vmap(lambda k: jnp.sum(vmap(lambda d: gamma[:,k]*(jnp.sum(X, axis=1)[:,d]))(jnp.arange(self.D)).T,axis=0) / (self.M * N_k[k]))(jnp.arange(self.K))
-
-
+                pi = N_k / n
+                mu = jnp.dot(gamma.T, X) / N_k[:, jnp.newaxis]
                 Sigma = jnp.zeros((self.K, self.D, self.D))
                 for k in range(self.K):
-                    weighted_X = jnp.sum(vmap(lambda i:gamma[i,k]*(X[i, :, :] - mu[k,:]).T@(X[i, :, :] - mu[k,:]))(jnp.arange(n)),axis=0)
-                    Sigma = Sigma.at[k].set(weighted_X/ (self.M * N_k[k]) + 1e-6 * jnp.eye(self.D))
+                    weighted_X = jnp.sqrt(gamma[:, k][:, jnp.newaxis]) * (X - mu[k])
+                    Sigma = Sigma.at[k].set(jnp.dot(weighted_X.T, weighted_X) / N_k[k])
                 loss_value = self.loss_function(X, pi, mu, Sigma)
                 return loss_value, (pi, mu, Sigma, gamma)
 
@@ -129,4 +126,3 @@ class DEGMM:
             return output_jax
         else:
             return pi_pred, mu_pred, Sigma_pred
-    

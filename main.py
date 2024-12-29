@@ -3,6 +3,7 @@ import jax.random as random
 from src.data.generator import DataGenerator
 from src.models.gmm import GMM
 from src.models.degmm import DEGMM
+from src.models.dgmm import DGMM
 from src.utils.plots import plot_cluster, animate_inference
 import argparse
 import matplotlib.pyplot as plt
@@ -50,6 +51,17 @@ def main(args):
     timeend = time.time()
     print(f"Time taken to fit GMM: {timeend - timestart} seconds")
 
+
+    # Initialize the DGMM model
+    dgmm = DGMM(D, hidden_dim=32, K=K)
+
+    # Fit the DEGMM model
+    # resize X to (n, D*M)
+    timestart = time.time()
+    dgmm.fit(X_member,num_epochs=num_epochs)
+    timeend = time.time()
+    print(f"Time taken to fit GMM: {timeend - timestart} seconds")
+
     # Initialize the DEGMM model
     degmm = DEGMM(D, hidden_dim=32, M=M, K=K)
 
@@ -62,6 +74,7 @@ def main(args):
 
 
     params_gmm = gmm.model_parameters[-1]
+    params_dgmm = dgmm.model_parameters[-1]
     params_degmm = degmm.model_parameters[-1]
 
 
@@ -80,6 +93,21 @@ def main(args):
     accgmm = accuracy_score(Z, closest_cluster_gmm)
 
 
+    # Compute the confusion matrix
+    y_pred_dgmm = params_dgmm["clusters"]
+    confusion_matrix_dgmm = confusion_matrix(Z, y_pred_dgmm)
+
+    # reorder y_pred_dgmm following the closest cluster to the true cluster
+    reorderlabels = confusion_matrix_dgmm.argmax(axis=0)
+    closest_cluster_dgmm = y_pred_dgmm.copy()
+    for k in range(K):
+        closest_cluster_dgmm = closest_cluster_dgmm.at[y_pred_dgmm==k].set(reorderlabels[k])
+    params_dgmm["mu"] = params_dgmm["mu"][reorderlabels,:]
+    params_dgmm["Sigma"] = params_dgmm["Sigma"][reorderlabels,:,:]
+    params_dgmm["pi"] = params_dgmm["pi"][reorderlabels]
+    accdgmm = accuracy_score(Z, closest_cluster_dgmm)
+
+
     y_pred_degmm = params_degmm["clusters"]
     confusion_matrix_degmm = confusion_matrix(Z, y_pred_degmm)
 
@@ -95,7 +123,7 @@ def main(args):
 
 
     ################################## Plot the results ##################################
-    fig, ax = plt.subplots(1, 3, figsize=(10, 5))
+    fig, ax = plt.subplots(1, 4, figsize=(10, 5))
     palette = plt.cm.get_cmap('tab10', K)
     # Plot the true clusters
     plot_cluster(X, Z, true_params, palette, ax[0], "True")
@@ -109,11 +137,17 @@ def main(args):
     ax[1].set_xlabel(f'X1')
     ax[1].set_xlabel(f'X2')
 
-    # Plot the results of degmm
-    plot_cluster(X, closest_cluster_degmm, params_degmm, palette, ax[2], "DEGMM")
-    ax[2].set_title(f'DEGMM Clusters ACC={accdegmm:.2f}')
+    # Plot the results of dgmm
+    plot_cluster(X, closest_cluster_dgmm, params_dgmm, palette, ax[2], "DGMM")
+    ax[2].set_title(f'DGMM Clusters ACC={accdgmm:.2f}')
     ax[2].set_xlabel(f'X1')
     ax[2].set_xlabel(f'X2')
+
+    # Plot the results of degmm
+    plot_cluster(X, closest_cluster_degmm, params_degmm, palette, ax[3], "DEGMM")
+    ax[3].set_title(f'DEGMM Clusters ACC={accdegmm:.2f}')
+    ax[3].set_xlabel(f'X1')
+    ax[3].set_xlabel(f'X2')
 
     # plt.show()
     fig.tight_layout()
